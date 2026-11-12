@@ -1,7 +1,7 @@
 # Session Notes
 
 Record what happened in each Resounding Joy session, right after it, on your phone. Your Mac turns the
-recordings into text and sorts them into the boxes of the session form, ready to paste.
+recordings into text, and Claude uses them to fill in the session forms once you approve a preview.
 
 **Open it:** https://www.davyrockett.com/session-notes/ (or the Session Notes icon on your Apps screen)
 
@@ -20,11 +20,10 @@ Each session shows where it stands: **Not recorded**, **Waiting to send**, **Rec
 ## What happens to the recordings
 
 - They go to a private project, `session-notes-data`, which only your access key can reach.
-- On Friday afternoon your Mac turns them into text (on the Mac itself, nothing is sent anywhere else), sorts
-  each session into the form's text boxes, and puts the result in the Apple Note
-  **Session notes – week of M/D**. Any session with no recording is listed at the top.
-- Once the note is made, the recordings are deleted from the private project.
-- Say `/session-notes` to Claude on the Mac to do this any time instead of waiting for Friday.
+- When you say `/session-notes` to Claude on the Mac, it turns them into text (on the Mac itself, nothing is sent
+  anywhere else), drafts each session form, and shows you a preview of the whole batch. It asks about anything
+  it needs, and fills in the forms in Safari only after you approve.
+- Once a form is submitted, that session shows **Written up** and its recordings are deleted from the private project.
 
 ## Settings (gear icon)
 

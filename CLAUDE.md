@@ -87,8 +87,8 @@ Local test port 8782.
     by the app. The file name is the only record, so keep that pattern (the Mac parses it too).
     `other` is the session id for "Another session".
 - The Mac side lives outside this repo, in `~/.claude/skills/session-notes/` (the `/session-notes` skill and
-  `notes.py`) and the Friday task `rj-session-notes-writeup`. It deletes recordings once the Apple Note is made
-  and sets `written: true` on each session, which the app shows as "Written up".
+  `notes.py`) The skill previews every form for David, fills the SurveyMonkey forms in Safari after he
+  approves, then deletes that session's recordings and sets `written: true` on each session, which the app shows as "Written up".
 - The data repo is **not** downloaded into Dropbox (`NO_CLONE` in `tools/sync-github.py`): client recordings stay
   out of backups, and the Mac rewrites that repo's history when it deletes recordings.
 - Recording: `MediaRecorder`, `audio/mp4` on iPhone (saved as .m4a), 64 kbps. Leaving the app stops and saves
