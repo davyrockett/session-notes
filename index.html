@@ -105,7 +105,17 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 @keyframes pulse { from { opacity: .9; transform: scale(.94); } to { opacity: 0; transform: scale(1.12); } }
 @media (prefers-reduced-motion: reduce) { .recording .rec-btn::after { animation: none; opacity: .7; } }
 .rec-label { font-weight: 700; min-height: 1.5em; }
-.hint { color: var(--muted); font-size: .92rem; text-align: center; max-width: 34em; margin: 0 auto; min-height: 5.6em; }
+.hint { color: var(--muted); font-size: .9rem; text-align: center; max-width: 34em; margin: 0 auto; min-height: 1.4em; }
+/* What to talk about: short questions, all on one screen, visible while recording */
+.prompts { display: grid; grid-template-columns: 1fr; gap: 10px; margin: 10px 0 0; padding: 12px 14px; border-radius: 16px;
+  background: var(--surface); border: 1px solid var(--line); }
+.prompts.two { grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+@media (max-width: 380px) { .prompts.two { gap: 10px 10px; } .prompts { padding: 10px 12px; } }
+.prompts h4 { margin: 0 0 4px; font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 1rem; letter-spacing: .02em; color: var(--accent-ink); }
+.prompts ul { margin: 0; padding: 0; list-style: none; }
+.prompts li { position: relative; padding-left: 12px; font-size: .88rem; line-height: 1.3; margin: 0 0 5px; }
+.prompts li::before { content: ""; position: absolute; left: 0; top: .5em; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+.prompts .first { grid-column: 1 / -1; font-weight: 700; font-size: .92rem; margin: 0; }
 .hint.bad { color: var(--bad); }
 .takes h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 1.2rem; color: var(--muted); margin: 22px 0 8px; }
 .take { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: center; padding: 12px 14px; }
@@ -219,6 +229,7 @@ input.txt:disabled, .stepper input:disabled { opacity: .5; }
       <div class="rec-label" id="rec-label">Tap to record</div>
     </div>
     <p class="hint" id="hint"></p>
+    <div class="prompts" id="prompts" aria-label="What to talk about"></div>
     <section class="card" id="bill-card">
       <h3>For billing</h3>
       <div class="field" id="f-count"><label for="b-count">How many came?</label>
@@ -703,15 +714,52 @@ function renderHome() {
 
 /* ---------- One session ---------- */
 
-const HINT = 'Say what you did from start to finish, how people responded and anything they said, and what you thought of it. Use initials, not names.';
+const HINT = '';
+/* What to talk about, so one recording covers the timecard and the session form. Short on purpose: it has to fit
+   on one phone screen next to the record button. */
+function promptsFor(s) {
+  const c = s.client;
+  const billing = s.kind === 'doc' ? null : [
+    s.kind === 'billing' ? 'Who was there?' : 'How many came?',
+    'Prep time? What did you make?',
+    'Drive time?',
+    'Start and end, if not as scheduled',
+    'Anyone observing?',
+  ];
+  const doc = s.kind === 'billing' ? null : [
+    'Opening, each song or activity, closing',
+    c ? `Goals for ${c}` : 'Goals you worked on',
+    'Instruments, singing, drumming, movement…',
+    c ? `How ${c} responded, how often` : 'How they responded, how often',
+    'Quotes from clients or staff',
+    'Your thoughts, next time',
+  ];
+  const first = s.id === 'other' ? 'First: which session is this? Use initials, not names.'
+    : c ? `Just ${c}. If ${c} was away, just say so.` : 'Use initials, not names.';
+  return { first, billing, doc };
+}
+
+function renderPrompts(s) {
+  const p = promptsFor(s);
+  const box = $('prompts');
+  const group = (title, items) => {
+    const g = el('div');
+    const ul = el('ul');
+    ul.append(...items.map((t) => el('li', '', t)));
+    g.append(el('h4', '', title), ul);
+    return g;
+  };
+  box.className = `prompts${p.billing && p.doc ? ' two' : ''}`;
+  box.replaceChildren(el('p', 'first', p.first),
+    ...(p.billing ? [group('Billing', p.billing)] : []), ...(p.doc ? [group('Documentation', p.doc)] : []));
+}
 
 function openSession(week, session) {
   current = { week: week.week, session };
   $('sess-name').textContent = session.name;
   $('sess-when').textContent = session.date ? `${dayLabel(session.date)}${session.time ? ` · ${session.time}` : ''}` : 'Start by saying which session this is.';
-  setHint(session.hint || HINT);
-  const billingOnly = session.kind === 'billing';
-  $('recorder').hidden = $('hint').hidden = $('takes-box').hidden = billingOnly;
+  setHint(HINT);
+  renderPrompts(session);
   $('bill-card').hidden = session.kind === 'doc';
   if (!$('bill-card').hidden) fillBilling();
   $('home').hidden = true;
@@ -980,7 +1028,7 @@ async function startRecording() {
   $('rec-btn').disabled = false;
   $('rec-btn').setAttribute('aria-label', 'Stop recording');
   $('rec-label').textContent = 'Recording. Tap to stop.';
-  setHint((current && current.session.hint) || HINT);
+  setHint(HINT);
   ticker = setInterval(() => { $('timer').textContent = mmss((Date.now() - startedAt) / 1000); }, 250);
   try { wakeLock = await navigator.wakeLock.request('screen'); } catch { wakeLock = null; }
 }
@@ -1127,7 +1175,7 @@ $('set-update').addEventListener('click', async () => {
 <script>
 // Offline support + updates. See sw.js.
 // The version shown in Settings. tools/bump.sh keeps this in step with VERSION in sw.js.
-window.APP_VERSION = 'v5';
+window.APP_VERSION = 'v6';
 (async () => {
   if (!('serviceWorker' in navigator)) return;
   const reg = await navigator.serviceWorker.register('sw.js');

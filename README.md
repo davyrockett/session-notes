@@ -9,8 +9,9 @@ recordings into text, and Claude uses them to fill in the session forms once you
 
 1. The list shows this week's sessions (and last week's, plus any older week with something unfinished).
    Your Mac fills it in every Monday morning.
-2. Tap a session, tap the orange button, and talk: what you did from start to finish, how people responded and
-   anything they said, and what you thought of it. Use initials, not names. Tap again to stop. With no signal it
+2. Tap a session, tap the orange button, and talk. The questions under the button remind you what to cover for
+   billing (how many came, prep, drive time, times, observers) and documentation (start to finish, goals,
+   instruments and activities, responses, quotes, your thoughts). Use initials, not names. Tap again to stop. With no signal it
    stays on the phone and is sent when you're back online. Remembered something else? Record again.
 3. Under **For billing**, fill in what you know: how many came, prep time, whether the times were as scheduled,
    and a note for the timecard (e.g. who observed). It saves as you go. Anything filled in here, you won't be

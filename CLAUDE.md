@@ -102,5 +102,10 @@ Local test port 8782.
   approves, then deletes that session's recordings and sets `written: true` on each session, which the app shows as "Written up".
 - The data repo is **not** downloaded into Dropbox (`NO_CLONE` in `tools/sync-github.py`): client recordings stay
   out of backups, and the Mac rewrites that repo's history when it deletes recordings.
+- The recording screen shows short prompts (`promptsFor()`), all on one phone screen: Billing (how many came / who
+  was there, prep, drive time, times, observers) and Documentation (start to finish, goals, methods, responses,
+  quotes, thoughts). David asked 2026-11-11 to say as much as possible in one recording for both. Keep them short
+  and keep them fitting on one 375-px-wide screen with the record button. Winnetka's billing row can be recorded
+  too (billing prompts only); its residents get documentation prompts only.
 - Recording: `MediaRecorder`, `audio/mp4` on iPhone (saved as .m4a), 64 kbps. Leaving the app stops and saves
   the recording. The screen is kept awake while recording where the phone allows it.
