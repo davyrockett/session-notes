@@ -83,9 +83,10 @@ Local test port 8782.
   - `weeks/<monday>.json`: `{ week, sessions: [{ id, date, start, time, name, written }] }`, written by the Mac
     (`~/.claude/skills/session-notes/notes.py week`, run by the Monday task `rj-weekly-session-forms`).
     The app shows the newest two weeks.
-    A session may also carry `hint` (shown under the record button instead of the usual reminder) and `clients`:
-    some sites are documented one form per client, and the reminder tells David to cover each one. Those
-    initials live only in the private week list and on the Mac (`PER_CLIENT` in `notes.py`), never in this repo.
+    A session may also carry `hint` (shown under the record button instead of the usual reminder). Sites
+    documented one form per client (Winnetka) arrive as one row per client, with `group` and `client` fields;
+    the app just shows them as ordinary rows. Those initials live only in the private week list and on the Mac
+    (`PER_CLIENT` in `notes.py`), never in this repo.
   - `recordings/<monday>/<session id>__<yyyymmdd-hhmmss>__<seconds>s.<ext>`: one file per recording, uploaded
     by the app. The file name is the only record, so keep that pattern (the Mac parses it too).
     `other` is the session id for "Another session".
