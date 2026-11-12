@@ -16,11 +16,14 @@ recordings into text, and Claude uses them to fill in the session forms once you
 3. Under **For billing**, fill in what you know: how many came, prep time, whether the times were as scheduled,
    and a note for the timecard (e.g. who observed). It saves as you go. Anything filled in here, you won't be
    asked about later.
-4. **Winnetka**: the Winnetka row is for billing (tick who was there). Each resident has their own row below it
+4. Under **For the form**, tap how much you saw of each goal you worked on (No / Some / Strong) and the methods
+   you used. Last time's picks for that session are already selected in pale orange: change anything that's
+   different. They're kept once you tap anything or make a recording. These go straight onto the form's tick boxes.
+5. **Winnetka**: the Winnetka row is for billing (tick who was there). Each resident has their own row below it
    for their own recording: tap the arrow on the Winnetka row to show or hide them.
-5. **+ Add other billable time** (bottom of the list) for time that isn't a session: hours and doc, band
+6. **+ Add other billable time** (bottom of the list) for time that isn't a session: hours and doc, band
    planning, prep, a meeting, drive time.
-6. A session that isn't on the list goes under **Another session**: say which session it is at the start.
+7. A session that isn't on the list goes under **Another session**: say which session it is at the start.
 
 Each row shows where it stands: **Documentation** (not recorded, recorded, ✓ form submitted) and **Billing**
 (no details, details added, ✓ on the timecard).

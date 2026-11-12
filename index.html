@@ -191,6 +191,13 @@ input.txt:disabled, .stepper input:disabled { opacity: .5; }
 .save-line { color: var(--muted); font-size: .85rem; padding: 8px 0 12px; min-height: 2.6em; border-top: 1px solid var(--line); }
 .save-line.ok { color: var(--good); }
 .save-line.warn { color: var(--accent-ink); }
+.goal { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+.goal + .goal { border-top: 1px dashed var(--line); }
+.goal span { flex: 1; min-width: 0; font-weight: 700; line-height: 1.25; }
+.goal .seg button { min-height: 40px; min-width: 52px; padding: 0 8px; }
+.goal.on span { color: var(--ink); }
+.goal:not(.on) span { color: var(--muted); font-weight: 400; }
+.card.from-last .goal .seg button[aria-pressed="true"], .card.from-last .chips button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-ink); }
 .dlg .field:first-of-type { padding-top: 8px; }
 .dlg-foot { display: flex; justify-content: space-between; gap: 8px; padding-top: 14px; }
 .dlg-foot div { display: flex; gap: 8px; }
@@ -242,6 +249,14 @@ input.txt:disabled, .stepper input:disabled { opacity: .5; }
         <div class="times"><label>Started<input type="time" class="txt" id="b-start" disabled></label><label>Ended<input type="time" class="txt" id="b-end" disabled></label></div></div>
       <div class="field"><label for="b-note">Note for the timecard</label><input type="text" class="txt" id="b-note" placeholder="e.g. Audrey observed" autocomplete="off"></div>
       <div class="save-line" id="b-save" role="status"></div>
+    </section>
+    <section class="card" id="form-card">
+      <h3>For the form</h3>
+      <div class="field"><span class="lab">Goals, and what you saw</span>
+        <p class="cap" style="margin:-4px 0 6px">Tap how much evidence you saw for each goal you worked on. Tap again to clear.</p>
+        <div id="f-goals"></div></div>
+      <div class="field"><span class="lab">Methods</span><div class="chips" id="f-methods"></div></div>
+      <div class="save-line" id="f-save" role="status"></div>
     </section>
     <div class="takes" id="takes-box">
       <h3>Recordings for this session</h3>
@@ -309,6 +324,7 @@ let remote = lsJson('sn.remote', {});  // { week: [{ name, sha }] } = recordings
 let details = lsJson('sn.details', {}); // { week: { session id: billing details } } as on GitHub
 let extras = lsJson('sn.extras', {});   // { week: { id: other billable time } } as on GitHub
 let folds = lsJson('sn.folds', {});     // { billing row id: 1 } for per-client sites shown open on this phone
+let formLast = lsJson('sn.formLast', {}); // { session name: { goals, methods } } last picks on this phone, for next time
 let outbox = lsJson('sn.outbox', {});   // { "details/…json" or "extra/…json": value, or null to delete } not sent yet
 let local = [];                        // recordings kept on this device (see the database below)
 let net = 'idle';                      // 'idle' | 'ok' | 'offline' | 'auth' | 'missing' | 'other'
@@ -507,7 +523,7 @@ async function flushOutbox() {
       net = 'ok';
     } catch (e) { net = e.kind || 'other'; break; }
   }
-  if (current) markSaved();
+  if (current) { markSaved(); markFormSaved(); }
 }
 
 function detailsFor(week, id) {
@@ -762,6 +778,8 @@ function openSession(week, session) {
   renderPrompts(session);
   $('bill-card').hidden = session.kind === 'doc';
   if (!$('bill-card').hidden) fillBilling();
+  $('form-card').hidden = session.kind === 'billing' || session.id === 'other';
+  if (!$('form-card').hidden) fillForm();
   $('home').hidden = true;
   $('session').hidden = false;
   window.scrollTo(0, 0);
@@ -828,11 +846,19 @@ function markSaved() {
   else { line.textContent = 'Optional. Anything you fill in here, you won’t be asked about later.'; line.className = 'save-line'; }
 }
 
+/* Billing and form picks share one details file per session; each card only changes its own part. */
+const BILL_KEYS = ['headcount', 'attended', 'prep', 'sameTimes', 'start', 'end', 'note'];
+function saveDetails(part) {
+  const s = current.session;
+  const v = { ...(detailsFor(current.week, s.id) || {}), ...part };
+  const empty = v.headcount == null && !(v.attended || []).length && v.prep == null && v.sameTimes == null && !v.note
+    && !Object.keys(v.goals || {}).length && !(v.methods || []).length;
+  queue(`details/${current.week}/${s.id}.json`, empty ? null : { ...v, updatedAt: new Date().toISOString() });
+}
+
 function saveBilling() {
-  if (!current || current.session.billed) return;
-  const v = readBilling();
-  const empty = v.headcount == null && !v.attended.length && v.prep == null && v.sameTimes == null && !v.note;
-  queue(`details/${current.week}/${current.session.id}.json`, empty ? null : { ...v, updatedAt: new Date().toISOString() });
+  if (!current || current.session.billed || $('bill-card').hidden) return;
+  saveDetails(readBilling());
   markSaved();
 }
 
@@ -863,6 +889,107 @@ for (const id of ['b-prep', 'b-same']) {
 }
 for (const id of ['b-start', 'b-end']) $(id).addEventListener('change', saveBilling);
 $('b-note').addEventListener('input', () => { clearTimeout(saveBilling.t); saveBilling.t = setTimeout(saveBilling, 700); });
+
+/* ---------- Form picks: goals, evidence and methods (the SurveyMonkey check boxes) ---------- */
+
+// Exactly as worded on the form, so the Mac can tick them by label.
+const GOALS = ['Decrease Agitation', 'Decrease Anger/Frustration', 'Decrease Anxiety', 'Improve Attention', 'Improve Coping',
+  'Improve Mood', 'Increase Cognitive Engagement', 'Increase Communication', 'Increase Motor Output', 'Increase Relaxation',
+  'Increase Social Interaction'];
+const LEVELS = [['No evidence', 'No'], ['Some evidence', 'Some'], ['Strong evidence', 'Strong']];
+const METHODS = ['Playing instruments', 'Singing', 'Drumming', 'Listening to music.', 'Improvising', 'Songwriting',
+  'Discussing lyrics', 'Movement/rhythm/dancing', 'Relaxation/breathing'];
+let formState = null;   // { goals: { goal: level }, methods: [], fromLast: bool } for the open session
+
+function renderForm() {
+  const f = formState;
+  $('f-goals').replaceChildren(...GOALS.map((g) => {
+    const row = el('div', `goal${f.goals[g] ? ' on' : ''}`);
+    const seg = el('div', 'seg');
+    seg.setAttribute('role', 'group');
+    seg.setAttribute('aria-label', g);
+    for (const [v, short] of LEVELS) {
+      const b = el('button', '', short);
+      b.type = 'button';
+      b.dataset.g = g;
+      b.dataset.v = v;
+      b.setAttribute('aria-label', `${g}: ${v}`);
+      b.setAttribute('aria-pressed', String(f.goals[g] === v));
+      seg.append(b);
+    }
+    row.append(el('span', '', g), seg);
+    return row;
+  }));
+  $('f-methods').replaceChildren(...METHODS.map((m) => {
+    const b = el('button', '', m.replace(/\.$/, ''));
+    b.type = 'button';
+    b.dataset.v = m;
+    b.setAttribute('aria-pressed', String(f.methods.includes(m)));
+    return b;
+  }));
+  $('form-card').classList.toggle('from-last', f.fromLast);
+  markFormSaved();
+}
+
+function fillForm() {
+  const s = current.session;
+  const d = detailsFor(current.week, s.id) || {};
+  const mine = Object.keys(d.goals || {}).length || (d.methods || []).length;
+  const last = formLast[s.name];
+  formState = mine ? { goals: { ...d.goals }, methods: [...(d.methods || [])], fromLast: false }
+    : last && !s.written ? { goals: { ...last.goals }, methods: [...last.methods], fromLast: true }
+    : { goals: {}, methods: [], fromLast: false };
+  $('form-card').classList.toggle('locked', Boolean(s.written));
+  renderForm();
+}
+
+function markFormSaved() {
+  if (!current || $('form-card').hidden) return;
+  const line = $('f-save');
+  const s = current.session;
+  const pending = `details/${current.week}/${s.id}.json` in outbox;
+  const saved = detailsFor(current.week, s.id) || {};
+  const has = Object.keys(saved.goals || {}).length || (saved.methods || []).length;
+  if (s.written) { line.textContent = 'Already written up.'; line.className = 'save-line ok'; }
+  else if (formState.fromLast) { line.textContent = 'Same as last time. Change anything that’s different; it’s kept when you record or tap.'; line.className = 'save-line warn'; }
+  else if (has && pending) { line.textContent = 'Saved on this phone, waiting to send.'; line.className = 'save-line warn'; }
+  else if (has) { line.textContent = 'Saved. Your Mac will tick these on the form.'; line.className = 'save-line ok'; }
+  else { line.textContent = 'Optional. Anything you pick here, you won’t be asked about later.'; line.className = 'save-line'; }
+}
+
+function saveForm() {
+  if (!current || current.session.written || $('form-card').hidden || !formState) return;
+  formState.fromLast = false;
+  const goals = {};
+  for (const g of GOALS) if (formState.goals[g]) goals[g] = formState.goals[g];
+  const methods = METHODS.filter((m) => formState.methods.includes(m));
+  saveDetails({ goals, methods });
+  if (Object.keys(goals).length || methods.length) {
+    formLast[current.session.name] = { goals, methods };
+    lsSet('sn.formLast', JSON.stringify(formLast));
+  }
+  $('form-card').classList.remove('from-last');
+  markFormSaved();
+}
+
+$('f-goals').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b || !formState) return;
+  if (formState.goals[b.dataset.g] === b.dataset.v) delete formState.goals[b.dataset.g];
+  else formState.goals[b.dataset.g] = b.dataset.v;
+  const row = b.closest('.goal');
+  row.classList.toggle('on', Boolean(formState.goals[b.dataset.g]));
+  row.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(formState.goals[b.dataset.g] === x.dataset.v)));
+  saveForm();
+});
+$('f-methods').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b || !formState) return;
+  const on = formState.methods.includes(b.dataset.v);
+  formState.methods = on ? formState.methods.filter((m) => m !== b.dataset.v) : [...formState.methods, b.dataset.v];
+  b.setAttribute('aria-pressed', String(!on));
+  saveForm();
+});
 
 /* ---------- Other billable time ---------- */
 
@@ -1063,6 +1190,7 @@ async function saveRecording() {
     setHint('This phone couldn’t save the recording (storage is full or blocked). Keep this screen open and check your connection.', true);
   }
   local.push(rec);
+  if (current && current.session === session && formState && formState.fromLast) saveForm();
   setHint('Saved. Record again if you remember more.');
   renderTakes();
   sendAll();
@@ -1175,7 +1303,7 @@ $('set-update').addEventListener('click', async () => {
 <script>
 // Offline support + updates. See sw.js.
 // The version shown in Settings. tools/bump.sh keeps this in step with VERSION in sw.js.
-window.APP_VERSION = 'v6';
+window.APP_VERSION = 'v7';
 (async () => {
   if (!('serviceWorker' in navigator)) return;
   const reg = await navigator.serviceWorker.register('sw.js');

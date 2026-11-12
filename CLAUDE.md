@@ -91,7 +91,10 @@ Local test port 8782.
     by the app. The file name is the only record, so keep that pattern (the Mac parses it too).
     `other` is the session id for "Another session".
   - `details/<monday>/<session id>.json`: billing details from the "For billing" card
-    `{ headcount, attended, prep, sameTimes, start, end, note, updatedAt }`. Saved as you change things.
+    `{ headcount, attended, prep, sameTimes, start, end, note, updatedAt }`, plus the "For the form" card's
+    `goals` (`{ goal: "No evidence" | "Some evidence" | "Strong evidence" }`) and `methods` (list). Goal and method
+    names are worded exactly as on the SurveyMonkey form (`GOALS`, `METHODS` in index.html), so the Mac can tick
+    them by label. Each card only changes its own part of the file (`saveDetails`). Saved as you change things.
   - `extra/<monday>/<id>.json`: other billable time `{ id, kind, date, start, end, note, createdAt, billed }`.
   - Details and other time are saved on the phone first (`sn.outbox`) and sent with the recordings.
   - The app shows the newest two weeks, plus older ones (up to 8 back) with anything unfinished.
@@ -107,5 +110,10 @@ Local test port 8782.
   quotes, thoughts). David asked 2026-11-11 to say as much as possible in one recording for both. Keep them short
   and keep them fitting on one 375-px-wide screen with the record button. Winnetka's billing row can be recorded
   too (billing prompts only); its residents get documentation prompts only.
+- **"For the form" card** (2026-11-12): on every row that gets a form (not Winnetka's billing row, not "Another
+  session"). Each goal has No / Some / Strong buttons (tap again to clear) and the methods are chips, so David
+  picks the form's tick boxes himself (he asked for this after the first `/paperwork` run). Last time's picks for
+  a session with the same name come pre-selected in pale orange (`sn.formLast` on the phone, since the Mac deletes
+  finished details files); they are saved as his once he taps anything or makes a recording. Locked once written up.
 - Recording: `MediaRecorder`, `audio/mp4` on iPhone (saved as .m4a), 64 kbps. Leaving the app stops and saves
   the recording. The screen is kept awake while recording where the phone allows it.
