@@ -82,7 +82,7 @@ Local test port 8782.
 - Data repo layout:
   - `weeks/<monday>.json`: `{ week, sessions: [{ id, date, start, time, name, written }] }`, written by the Mac
     (`~/.claude/skills/session-notes/notes.py week`, run by the Monday task `rj-weekly-session-forms`).
-    The app shows the newest two weeks.
+    The app shows the newest two weeks, plus older ones (up to 8 back) that still have a session not written up.
     A session may also carry `hint` (shown under the record button instead of the usual reminder). Sites
     documented one form per client (Winnetka) arrive as one row per client, with `group` and `client` fields;
     the app just shows them as ordinary rows. Those initials live only in the private week list and on the Mac

@@ -287,9 +287,11 @@ async function refresh() {
       if (!repo.ok) throw new NetError('missing');
       weeks = [];
     } else if (dir.ok) {
-      const names = (await dir.json()).map((f) => f.name).filter((n) => /^\d{4}-\d\d-\d\d\.json$/.test(n)).sort().slice(-2);
+      // The newest two weeks always, plus older weeks (up to 8 back) that still have a session not written up.
+      const names = (await dir.json()).map((f) => f.name).filter((n) => /^\d{4}-\d\d-\d\d\.json$/.test(n)).sort().slice(-8);
       const got = await Promise.all(names.map(async (n) => (await gh(`/contents/weeks/${n}`, { raw: true })).json()));
-      weeks = got.filter((w) => w && w.week && Array.isArray(w.sessions)).reverse();
+      weeks = got.filter((w, i) => w && w.week && Array.isArray(w.sessions) &&
+        (i >= got.length - 2 || w.sessions.some((x) => !x.written))).reverse();
     } else throw new NetError('other');
     const lists = {};
     await Promise.all(weeks.map(async (w) => {
@@ -723,7 +725,7 @@ $('set-update').addEventListener('click', async () => {
 <script>
 // Offline support + updates. See sw.js.
 // The version shown in Settings. tools/bump.sh keeps this in step with VERSION in sw.js.
-window.APP_VERSION = 'v2';
+window.APP_VERSION = 'v3';
 (async () => {
   if (!('serviceWorker' in navigator)) return;
   const reg = await navigator.serviceWorker.register('sw.js');
