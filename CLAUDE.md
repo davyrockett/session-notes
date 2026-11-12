@@ -84,7 +84,9 @@ Local test port 8782.
     written by the Mac (`notes.py week`, run by the Monday task `rj-weekly-session-forms`). `written` = form
     submitted, `billed` = on the timecard; both set by the Mac. Session kinds: none = billing + documentation;
     `"billing"` = a per-client site as a whole (Winnetka; billing only, with `clients`, "Who was there?");
-    `"doc"` = one client of it (documentation only, `parent` id, indented in the list).
+    `"doc"` = one client of it (documentation only, `parent` id, indented in the list). The clients fold away
+    under their site's row (folded by default; the chevron opens them; remembered per phone in `sn.folds`),
+    so David sees all his sessions at a glance (asked 2026-11-11).
   - `recordings/<monday>/<session id>__<yyyymmdd-hhmmss>__<seconds>s.<ext>`: one file per recording, uploaded
     by the app. The file name is the only record, so keep that pattern (the Mac parses it too).
     `other` is the session id for "Another session".

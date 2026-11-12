@@ -148,6 +148,13 @@ dialog::backdrop { background: rgb(0 0 0 / .45); }
 .mark.todo { background: none; border: 1px solid var(--line); padding: 2px 7px; }
 .list li.sub .row { padding-left: 32px; min-height: 56px; }
 .list li.sub .row b { font-size: 1rem; }
+.list li.fold { display: flex; align-items: stretch; }
+.list li.fold .row { flex: 1; min-width: 0; }
+.fold-btn { flex: none; width: 56px; border: 0; border-left: 1px solid var(--line); background: none; color: var(--muted); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; }
+.fold-btn svg { width: 22px; height: 22px; transition: transform .15s; }
+.fold-btn[aria-expanded="true"] svg { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { .fold-btn svg { transition: none; } }
 .add-time { width: 100%; margin-top: 10px; min-height: 48px; border-style: dashed; color: var(--muted); }
 .week .sub-h { font-family: var(--f-body); text-transform: none; letter-spacing: 0; font-size: .85rem; font-weight: 700; color: var(--muted); margin: 14px 0 6px; }
 
@@ -290,6 +297,7 @@ let weeks = lsJson('sn.weeks', []);    // newest first: [{ week, sessions: [{ id
 let remote = lsJson('sn.remote', {});  // { week: [{ name, sha }] } = recordings already on GitHub
 let details = lsJson('sn.details', {}); // { week: { session id: billing details } } as on GitHub
 let extras = lsJson('sn.extras', {});   // { week: { id: other billable time } } as on GitHub
+let folds = lsJson('sn.folds', {});     // { billing row id: 1 } for per-client sites shown open on this phone
 let outbox = lsJson('sn.outbox', {});   // { "details/…json" or "extra/…json": value, or null to delete } not sent yet
 let local = [];                        // recordings kept on this device (see the database below)
 let net = 'idle';                      // 'idle' | 'ok' | 'offline' | 'auth' | 'missing' | 'other'
@@ -615,6 +623,22 @@ function sessionRow(week, s) {
   btn.addEventListener('click', () => openSession(week, s));
   const li = el('li', s.kind === 'doc' ? 'sub' : '');
   li.append(btn);
+  if (s.kind === 'billing') {
+    // A per-client site (Winnetka): its residents' rows fold away under it. Folded unless opened.
+    const open = Boolean(folds[s.id]);
+    const fold = el('button', 'fold-btn');
+    fold.type = 'button';
+    fold.setAttribute('aria-expanded', String(open));
+    fold.setAttribute('aria-label', open ? `Hide ${s.name} residents` : `Show ${s.name} residents`);
+    fold.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+    fold.addEventListener('click', () => {
+      if (open) delete folds[s.id]; else folds[s.id] = 1;
+      lsSet('sn.folds', JSON.stringify(folds));
+      renderHome();
+    });
+    li.classList.add('fold');
+    li.append(fold);
+  }
   return li;
 }
 
@@ -664,7 +688,7 @@ function renderHome() {
       : w.sessions;
     if (sessions.length) {
       const list = el('ul', 'list');
-      list.append(...sessions.map((s) => sessionRow(w, s)));
+      list.append(...sessions.filter((s) => !s.parent || folds[s.parent]).map((s) => sessionRow(w, s)));
       sec.append(list);
     }
     const xs = extrasFor(w.week);
@@ -1103,7 +1127,7 @@ $('set-update').addEventListener('click', async () => {
 <script>
 // Offline support + updates. See sw.js.
 // The version shown in Settings. tools/bump.sh keeps this in step with VERSION in sw.js.
-window.APP_VERSION = 'v4';
+window.APP_VERSION = 'v5';
 (async () => {
   if (!('serviceWorker' in navigator)) return;
   const reg = await navigator.serviceWorker.register('sw.js');
