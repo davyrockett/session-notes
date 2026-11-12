@@ -64,8 +64,8 @@ website repo, `Claude Apps/website`): icon, name and one-line description, in th
 
 ## This app
 
-**Session Notes**: David taps one of the week's Resounding Joy sessions on his phone and records himself saying
-what happened. His Mac transcribes the recordings and sorts them into the text boxes of the SurveyMonkey
+**Session Notes**: billing and documentation for David's Resounding Joy sessions. He taps a session on his phone,
+records himself saying what happened (documentation) and fills in a few details for the timecard (billing). His Mac transcribes the recordings and sorts them into the text boxes of the SurveyMonkey
 "Session Log" form. Repo `session-notes`, made 2026-11-11. Live: https://www.davyrockett.com/session-notes/
 Local test port 8782.
 
@@ -79,17 +79,22 @@ Local test port 8782.
 - Everything is in `index.html`. Saved on the device: `sn.sync-token`, `sn.theme`, `sn.weeks` and `sn.remote`
   (last list seen, for offline), and IndexedDB `session-notes` / `recs` (recordings; kept three weeks after
   sending so they can be played back).
-- Data repo layout:
-  - `weeks/<monday>.json`: `{ week, sessions: [{ id, date, start, time, name, written }] }`, written by the Mac
-    (`~/.claude/skills/session-notes/notes.py week`, run by the Monday task `rj-weekly-session-forms`).
-    The app shows the newest two weeks, plus older ones (up to 8 back) that still have a session not written up.
-    A session may also carry `hint` (shown under the record button instead of the usual reminder). Sites
-    documented one form per client (Winnetka) arrive as one row per client, with `group` and `client` fields;
-    the app just shows them as ordinary rows. Those initials live only in the private week list and on the Mac
-    (`PER_CLIENT` in `notes.py`), never in this repo.
+- Data repo layout (full description at the top of the Mac's `notes.py`):
+  - `weeks/<monday>.json`: `{ week, sessions: [{ id, date, start, time, name, kind, written, billed, hint }] }`,
+    written by the Mac (`notes.py week`, run by the Monday task `rj-weekly-session-forms`). `written` = form
+    submitted, `billed` = on the timecard; both set by the Mac. Session kinds: none = billing + documentation;
+    `"billing"` = a per-client site as a whole (Winnetka; billing only, with `clients`, "Who was there?");
+    `"doc"` = one client of it (documentation only, `parent` id, indented in the list).
   - `recordings/<monday>/<session id>__<yyyymmdd-hhmmss>__<seconds>s.<ext>`: one file per recording, uploaded
     by the app. The file name is the only record, so keep that pattern (the Mac parses it too).
     `other` is the session id for "Another session".
+  - `details/<monday>/<session id>.json`: billing details from the "For billing" card
+    `{ headcount, attended, prep, sameTimes, start, end, note, updatedAt }`. Saved as you change things.
+  - `extra/<monday>/<id>.json`: other billable time `{ id, kind, date, start, end, note, createdAt, billed }`.
+  - Details and other time are saved on the phone first (`sn.outbox`) and sent with the recordings.
+  - The app shows the newest two weeks, plus older ones (up to 8 back) with anything unfinished.
+  - Each row shows "Documentation" and "Billing" marks (David's words, 2026-11-11). He chose not to have a
+    deadline banner in the app: the weekly deadline is the Friday "Paperwork" reminder.
 - The Mac side lives outside this repo, in `~/.claude/skills/session-notes/` (the `/session-notes` skill and
   `notes.py`) The skill previews every form for David, fills the SurveyMonkey forms in Safari after he
   approves, then deletes that session's recordings and sets `written: true` on each session, which the app shows as "Written up".

@@ -140,6 +140,43 @@ dialog::backdrop { background: rgb(0 0 0 / .45); }
 .update { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
   display: flex; gap: 12px; align-items: center; padding: 8px 8px 8px 16px; border-radius: 12px;
   background: var(--ink); color: var(--bg); box-shadow: 0 6px 24px rgb(0 0 0 / .25); white-space: nowrap; }
+/* Billing and documentation status on each row */
+.row .marks { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: 5px; }
+.mark { font-size: .76rem; font-weight: 700; line-height: 1.2; padding: 3px 8px; border-radius: 999px; background: var(--sunk); color: var(--muted); }
+.mark.done { background: var(--good-soft); color: var(--good); }
+.mark.part { background: var(--accent-soft); color: var(--accent-ink); }
+.mark.todo { background: none; border: 1px solid var(--line); padding: 2px 7px; }
+.list li.sub .row { padding-left: 32px; min-height: 56px; }
+.list li.sub .row b { font-size: 1rem; }
+.add-time { width: 100%; margin-top: 10px; min-height: 48px; border-style: dashed; color: var(--muted); }
+.week .sub-h { font-family: var(--f-body); text-transform: none; letter-spacing: 0; font-size: .85rem; font-weight: 700; color: var(--muted); margin: 14px 0 6px; }
+
+/* Billing details on a session */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 6px 14px; margin-top: 22px; }
+.card h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 1.2rem; color: var(--muted); margin: 10px 0 2px; }
+.field { padding: 12px 0; }
+.field + .field { border-top: 1px solid var(--line); }
+.field > label, .field > .lab { display: block; font-weight: 700; margin-bottom: 8px; }
+.field .cap { color: var(--muted); font-size: .85rem; margin: 6px 0 0; min-height: 1.3em; }
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.stepper button { width: 48px; height: 44px; border: 0; background: var(--sunk); font-size: 1.4rem; font-weight: 700; cursor: pointer; }
+.stepper input { width: 64px; height: 44px; border: 0; text-align: center; font: inherit; font-size: 1.2rem; font-weight: 700; background: var(--surface); color: var(--ink); -moz-appearance: textfield; }
+.stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips button { min-width: 52px; min-height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-weight: 700; cursor: pointer; }
+.chips button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #1E1B18; }
+.times { display: flex; gap: 10px; margin-top: 10px; align-items: center; flex-wrap: wrap; }
+.times label { display: flex; flex-direction: column; font-size: .85rem; color: var(--muted); gap: 4px; }
+input.txt, select.txt { font: inherit; padding: 9px 10px; min-height: 44px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); width: 100%; }
+.times input.txt { width: 9.5em; }
+input.txt:disabled, .stepper input:disabled { opacity: .5; }
+.card.locked .field { opacity: .55; pointer-events: none; }
+.save-line { color: var(--muted); font-size: .85rem; padding: 8px 0 12px; min-height: 2.6em; border-top: 1px solid var(--line); }
+.save-line.ok { color: var(--good); }
+.save-line.warn { color: var(--accent-ink); }
+.dlg .field:first-of-type { padding-top: 8px; }
+.dlg-foot { display: flex; justify-content: space-between; gap: 8px; padding-top: 14px; }
+.dlg-foot div { display: flex; gap: 8px; }
 </style>
 </head>
 <body>
@@ -150,7 +187,7 @@ dialog::backdrop { background: rgb(0 0 0 / .45); }
     <header>
       <div>
         <h1>Session Notes</h1>
-        <p>Tap a session and say what happened.</p>
+        <p>Billing and documentation for every session.</p>
       </div>
       <button type="button" class="icon-btn" id="settings-open" aria-label="Settings">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
@@ -158,6 +195,7 @@ dialog::backdrop { background: rgb(0 0 0 / .45); }
     </header>
     <div class="sendline" id="sendline" role="status"><span id="send-text"></span><button type="button" class="btn" id="send-now" hidden>Send now</button></div>
     <div id="weeks"></div>
+    <button type="button" class="btn add-time" id="add-time" hidden>+ Add other billable time</button>
   </main>
 
   <!-- One session: record and review -->
@@ -174,7 +212,20 @@ dialog::backdrop { background: rgb(0 0 0 / .45); }
       <div class="rec-label" id="rec-label">Tap to record</div>
     </div>
     <p class="hint" id="hint"></p>
-    <div class="takes">
+    <section class="card" id="bill-card">
+      <h3>For billing</h3>
+      <div class="field" id="f-count"><label for="b-count">How many came?</label>
+        <div class="stepper"><button type="button" id="b-minus" aria-label="One fewer">−</button><input type="number" id="b-count" inputmode="numeric" min="0" max="99" placeholder="–"><button type="button" id="b-plus" aria-label="One more">+</button></div></div>
+      <div class="field" id="f-who"><span class="lab">Who was there?</span><div class="chips" id="b-who"></div></div>
+      <div class="field"><span class="lab">Prep time</span>
+        <div class="chips" id="b-prep"><button type="button" data-v="0">None</button><button type="button" data-v="15">15 min</button><button type="button" data-v="30">30 min</button><button type="button" data-v="45">45 min</button><button type="button" data-v="60">1 hr</button></div></div>
+      <div class="field"><span class="lab">Session times</span>
+        <div class="chips" id="b-same"><button type="button" data-v="1">As scheduled</button><button type="button" data-v="0">Different</button></div>
+        <div class="times"><label>Started<input type="time" class="txt" id="b-start" disabled></label><label>Ended<input type="time" class="txt" id="b-end" disabled></label></div></div>
+      <div class="field"><label for="b-note">Note for the timecard</label><input type="text" class="txt" id="b-note" placeholder="e.g. Audrey observed" autocomplete="off"></div>
+      <div class="save-line" id="b-save" role="status"></div>
+    </section>
+    <div class="takes" id="takes-box">
       <h3>Recordings for this session</h3>
       <ul class="list" id="takes"></ul>
     </div>
@@ -200,14 +251,32 @@ dialog::backdrop { background: rgb(0 0 0 / .45); }
   </div>
 </dialog>
 
+<dialog id="time-dlg">
+  <form class="dlg" id="time-form" method="dialog">
+    <div class="dlg-head"><h2 id="time-title">Other time</h2><button type="button" class="icon-btn" id="time-close" aria-label="Close">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="field"><label for="t-kind">What</label>
+      <select class="txt" id="t-kind"><option>Hours and doc</option><option>Band planning</option><option>Prep</option><option>Meeting</option><option>Drive time</option><option>Other</option></select></div>
+    <div class="field"><label for="t-date">Day</label><input type="date" class="txt" id="t-date" required></div>
+    <div class="field"><span class="lab">Time</span><div class="times" style="margin-top:0"><label>From<input type="time" class="txt" id="t-start" required></label><label>To<input type="time" class="txt" id="t-end" required></label></div></div>
+    <div class="field"><label for="t-note">Note for the timecard</label><input type="text" class="txt" id="t-note" placeholder="e.g. which session it was for" autocomplete="off"><p class="cap" id="t-msg"></p></div>
+    <div class="dlg-foot"><button type="button" class="btn danger" id="t-delete">Delete</button><div><button type="button" class="btn" id="t-cancel">Cancel</button><button type="submit" class="btn primary" id="t-save">Save</button></div></div>
+  </form>
+</dialog>
+
 <div class="update" id="update-banner" role="status" hidden><span>A new version is ready.</span><button type="button" class="btn primary" id="update-btn">Update</button></div>
 
 <script>
 'use strict';
-/* Session Notes: David taps one of this week's sessions and records himself saying what happened.
-   Recordings go to the private project davyrockett/session-notes-data; his Mac turns them into text.
-     weeks/<monday>.json                         the week's sessions (written by the Mac each Monday)
+/* Session Notes: billing and documentation for each of David's sessions. He taps a session, records himself
+   saying what happened (documentation) and fills in a few details for the timecard (billing). Everything goes to the
+   private project davyrockett/session-notes-data; his Mac turns recordings into text and fills in the forms.
+     weeks/<monday>.json                    the week's sessions (written by the Mac; `written` and `billed` set there)
      recordings/<monday>/<session>__<when>__<secs>s.<ext>   one file per recording (uploaded from here)
+     details/<monday>/<session>.json        billing details for one session (written from here)
+     extra/<monday>/<id>.json               other billable time (written from here; `billed` set by the Mac)
+   Session kinds: none = billing + documentation; "billing" = a per-client site as a whole (billing only, with
+   `clients`); "doc" = one of its clients (documentation only).
    Nothing about a session is kept in this public app: without the access key the list is empty. */
 
 const REPO = 'davyrockett/session-notes-data';
@@ -217,8 +286,11 @@ function lsSet(k, v) { try { v == null ? localStorage.removeItem(k) : localStora
 function lsJson(k, fallback) { try { return JSON.parse(lsGet(k)) || fallback; } catch { return fallback; } }
 const token = () => lsGet('sn.sync-token');
 
-let weeks = lsJson('sn.weeks', []);    // newest first: [{ week, sessions: [{ id, date, start, time, name, written }] }]
+let weeks = lsJson('sn.weeks', []);    // newest first: [{ week, sessions: [{ id, date, start, time, name, kind, written, billed }] }]
 let remote = lsJson('sn.remote', {});  // { week: [{ name, sha }] } = recordings already on GitHub
+let details = lsJson('sn.details', {}); // { week: { session id: billing details } } as on GitHub
+let extras = lsJson('sn.extras', {});   // { week: { id: other billable time } } as on GitHub
+let outbox = lsJson('sn.outbox', {});   // { "details/…json" or "extra/…json": value, or null to delete } not sent yet
 let local = [];                        // recordings kept on this device (see the database below)
 let net = 'idle';                      // 'idle' | 'ok' | 'offline' | 'auth' | 'missing' | 'other'
 let current = null;                    // { week, session } while one session is open
@@ -277,30 +349,59 @@ async function gh(path, options = {}) {
   return res;
 }
 
+async function folder(path) {
+  const r = await gh(`/contents/${path}`);
+  if (!r.ok) return {};
+  const files = (await r.json()).filter((f) => f.name.endsWith('.json'));
+  const out = {};
+  await Promise.all(files.map(async (f) => {
+    const res = await gh(`/contents/${path}/${f.name}`, { raw: true });
+    if (res.ok) out[f.name.slice(0, -5)] = await res.json().catch(() => null);
+  }));
+  return out;
+}
+
+const docDone = (s) => s.kind === 'billing' || Boolean(s.written);
+const billDone = (s) => s.kind === 'doc' || Boolean(s.billed);
+
 async function refresh() {
   if (!token()) { net = 'idle'; render(); return; }
   try {
     const dir = await gh('/contents/weeks');
+    let got = [];
     if (dir.status === 404) {
       // No list yet, or a key that can't see the project: tell them apart.
       const repo = await gh('');
       if (!repo.ok) throw new NetError('missing');
-      weeks = [];
     } else if (dir.ok) {
-      // The newest two weeks always, plus older weeks (up to 8 back) that still have a session not written up.
       const names = (await dir.json()).map((f) => f.name).filter((n) => /^\d{4}-\d\d-\d\d\.json$/.test(n)).sort().slice(-8);
-      const got = await Promise.all(names.map(async (n) => (await gh(`/contents/weeks/${n}`, { raw: true })).json()));
-      weeks = got.filter((w, i) => w && w.week && Array.isArray(w.sessions) &&
-        (i >= got.length - 2 || w.sessions.some((x) => !x.written))).reverse();
+      got = (await Promise.all(names.map(async (n) => (await gh(`/contents/weeks/${n}`, { raw: true })).json())))
+        .filter((w) => w && w.week && Array.isArray(w.sessions));
     } else throw new NetError('other');
-    const lists = {};
+    // Other time can be logged for a week that has no session list.
+    const xr = await gh('/contents/extra');
+    const xWeeks = xr.ok ? (await xr.json()).map((f) => f.name).filter((n) => /^\d{4}-\d\d-\d\d$/.test(n)) : [];
+    for (const wk of xWeeks) if (!got.some((w) => w.week === wk)) got.push({ week: wk, sessions: [] });
+    got.sort((a, b) => a.week.localeCompare(b.week));
+    got = got.slice(-8);
+    const ex = {};
+    await Promise.all(got.map(async (w) => { ex[w.week] = xWeeks.includes(w.week) ? await folder(`extra/${w.week}`) : {}; }));
+    // The newest two weeks always, plus older ones while anything in them is unfinished.
+    const lists = got.filter((w) => w.sessions.length);
+    const newest = lists.slice(-2).map((w) => w.week);
+    weeks = got.filter((w) => newest.includes(w.week) || w.sessions.some((x) => !docDone(x) || !billDone(x)) ||
+      Object.values(ex[w.week] || {}).some((x) => x && !x.billed)).reverse();
+    const rec = {}, det = {};
     await Promise.all(weeks.map(async (w) => {
       const r = await gh(`/contents/recordings/${w.week}`);
-      lists[w.week] = r.ok ? (await r.json()).map((f) => ({ name: f.name, sha: f.sha })) : [];
+      rec[w.week] = r.ok ? (await r.json()).map((f) => ({ name: f.name, sha: f.sha })) : [];
+      det[w.week] = w.sessions.length ? await folder(`details/${w.week}`) : {};
     }));
-    remote = lists;
+    remote = rec; details = det; extras = ex;
     lsSet('sn.weeks', JSON.stringify(weeks));
     lsSet('sn.remote', JSON.stringify(remote));
+    lsSet('sn.details', JSON.stringify(details));
+    lsSet('sn.extras', JSON.stringify(extras));
     net = 'ok';
   } catch (e) { net = e.kind || 'other'; }
   render();
@@ -319,7 +420,7 @@ let sending = false;
 async function sendAll() {
   if (sending || !token()) { render(); return; }
   const waiting = local.filter((r) => !r.uploaded);
-  if (!waiting.length) { render(); return; }
+  if (!waiting.length && !Object.keys(outbox).length) { render(); return; }
   sending = true;
   render();
   for (const rec of waiting) {
@@ -340,8 +441,69 @@ async function sendAll() {
     } catch (e) { net = e.kind || 'other'; break; }
     render();
   }
+  if (net !== 'offline' && net !== 'auth') await flushOutbox();
   sending = false;
   render();
+}
+
+/* ---------- Billing details and other time: saved here first, then sent ---------- */
+
+function toBase64(text) {
+  const bytes = new TextEncoder().encode(text);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+
+function queue(path, value) {
+  outbox[path] = value;
+  lsSet('sn.outbox', JSON.stringify(outbox));
+  clearTimeout(queue.timer);
+  queue.timer = setTimeout(sendAll, 1200);
+}
+
+async function flushOutbox() {
+  for (const path of Object.keys(outbox)) {
+    const value = outbox[path];
+    try {
+      const info = await gh(`/contents/${path}`);
+      const sha = info.ok ? (await info.json()).sha : null;
+      let res;
+      if (value === null) {
+        res = sha ? await gh(`/contents/${path}`, { method: 'DELETE', body: { message: 'Delete', sha } }) : { ok: true };
+      } else {
+        res = await gh(`/contents/${path}`, { method: 'PUT',
+          body: { message: 'From phone', content: toBase64(JSON.stringify(value, null, 2) + '\n'), ...(sha ? { sha } : {}) } });
+      }
+      if (!res.ok) throw new NetError(res.status === 404 ? 'missing' : 'other');
+      const m = /^(details|extra)\/([^/]+)\/(.+)\.json$/.exec(path);
+      if (m) {
+        const store = m[1] === 'details' ? details : extras;
+        store[m[2]] = store[m[2]] || {};
+        if (value === null) delete store[m[2]][m[3]]; else store[m[2]][m[3]] = value;
+        lsSet(m[1] === 'details' ? 'sn.details' : 'sn.extras', JSON.stringify(store));
+      }
+      if (outbox[path] === value) delete outbox[path];   // unless it changed again meanwhile
+      lsSet('sn.outbox', JSON.stringify(outbox));
+      net = 'ok';
+    } catch (e) { net = e.kind || 'other'; break; }
+  }
+  if (current) markSaved();
+}
+
+function detailsFor(week, id) {
+  const path = `details/${week}/${id}.json`;
+  return path in outbox ? outbox[path] : (details[week] || {})[id] || null;
+}
+
+function extrasFor(week) {
+  const out = { ...(extras[week] || {}) };
+  for (const [path, value] of Object.entries(outbox)) {
+    const m = /^extra\/([^/]+)\/(.+)\.json$/.exec(path);
+    if (!m || m[1] !== week) continue;
+    if (value === null) delete out[m[2]]; else out[m[2]] = value;
+  }
+  return Object.values(out).filter(Boolean).sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
 }
 
 /* ---------- What each session has ---------- */
@@ -397,14 +559,16 @@ function el(tag, cls, text) {
 
 function renderSendLine() {
   const waiting = local.filter((r) => !r.uploaded).length;
+  const changes = Object.keys(outbox).length;
   const line = $('sendline');
   let text = '', cls = '', button = false;
   if (!token()) text = '';
   else if (sending) text = 'Sending…';
   else if (net === 'auth') { text = 'The access key isn’t working. Check it in Settings.'; cls = 'bad'; }
   else if (net === 'missing') { text = 'The access key can’t reach the session notes project yet.'; cls = 'bad'; }
-  else if (waiting) {
-    text = `${waiting} recording${waiting === 1 ? '' : 's'} saved on this phone, waiting to send.`;
+  else if (waiting || changes) {
+    text = [waiting && `${waiting} recording${waiting === 1 ? '' : 's'}`, changes && `${changes} change${changes === 1 ? '' : 's'}`]
+      .filter(Boolean).join(' and ') + ' saved on this phone, waiting to send.';
     cls = 'warn'; button = true;
   } else if (net === 'offline') text = 'No connection. Showing the last list this phone saw.';
   else if (net === 'ok') text = 'Everything has been sent.';
@@ -413,24 +577,62 @@ function renderSendLine() {
   $('send-now').hidden = !button;
 }
 
-function sessionRow(week, s, i) {
+function mark(text, cls) { return el('span', `mark ${cls}`, text); }
+
+function docMark(week, s) {
+  if (s.kind === 'billing') {
+    const kids = week.sessions.filter((k) => k.parent === s.id);
+    const done = kids.filter((k) => k.written).length;
+    return done === kids.length ? mark('Documentation ✓', 'done') : mark(`Documentation: ${done} of ${kids.length}`, done ? 'part' : 'todo');
+  }
+  if (s.written) return mark('Documentation ✓', 'done');
   const takes = takesFor(week.week, s.id);
-  const waiting = takes.filter((t) => !t.uploaded).length;
-  const later = s.start && new Date(s.start) > new Date();
-  const btn = el('button', `row${later && !takes.length ? ' later' : ''}`);
+  if (takes.some((t) => !t.uploaded)) return mark('Documentation: waiting to send', 'part');
+  if (takes.length) return mark('Documentation: recorded', 'part');
+  return mark('Documentation: not recorded', 'todo');
+}
+
+function billMark(week, s) {
+  if (s.billed) return mark('Billing ✓', 'done');
+  return detailsFor(week.week, s.id) ? mark('Billing: details added', 'part') : mark('Billing: no details', 'todo');
+}
+
+function sessionRow(week, s) {
+  const takes = takesFor(week.week, s.id);
+  const later = s.start && new Date(s.start) > new Date() && !takes.length && !detailsFor(week.week, s.id);
+  const btn = el('button', `row${later ? ' later' : ''}`);
   btn.type = 'button';
   const left = el('span');
   left.append(el('b', '', s.name), el('small', '', s.date ? `${dayLabel(s.date)}${s.time ? ` · ${s.time}` : ''}` : (s.note || '')));
-  let chip;
-  if (waiting) chip = el('span', 'chip wait', 'Waiting to send');
-  else if (takes.length) chip = el('span', 'chip has', takes.length === 1 ? 'Recorded' : `${takes.length} recordings`);
-  else if (s.written) chip = el('span', 'chip has', 'Written up');
-  else if (later) chip = el('span', 'chip', 'Upcoming');
-  else if (s.id === 'other') chip = el('span', 'chip', '');
-  else chip = el('span', 'chip need', 'Not recorded');
-  if (!chip.textContent) chip.style.visibility = 'hidden';
-  btn.append(left, chip);
+  if (s.id !== 'other' && !later) {
+    const marks = el('span', 'marks');
+    if (s.kind !== 'billing') marks.append(docMark(week, s));
+    if (s.kind !== 'doc') marks.append(billMark(week, s));
+    if (s.kind === 'billing') marks.prepend(docMark(week, s));
+    left.append(marks);
+  }
+  btn.append(left, later ? el('span', 'chip', 'Upcoming') : el('span'));
   btn.addEventListener('click', () => openSession(week, s));
+  const li = el('li', s.kind === 'doc' ? 'sub' : '');
+  li.append(btn);
+  return li;
+}
+
+function timeLabel(hhmm) {
+  if (!hhmm) return '';
+  const [h, m] = hhmm.split(':').map(Number);
+  return `${h % 12 || 12}:${String(m).padStart(2, '0')}${h < 12 ? ' AM' : ' PM'}`;
+}
+
+function extraRow(week, x) {
+  const btn = el('button', 'row');
+  btn.type = 'button';
+  const left = el('span');
+  const marks = el('span', 'marks');
+  marks.append(x.billed ? mark('Billing ✓', 'done') : mark('Billing: to do', 'todo'));
+  left.append(el('b', '', x.kind), el('small', '', `${dayLabel(x.date)} · ${timeLabel(x.start)}–${timeLabel(x.end)}${x.note ? ` · ${x.note}` : ''}`), marks);
+  btn.append(left, el('span'));
+  btn.addEventListener('click', () => openTime(x));
   const li = el('li');
   li.append(btn);
   return li;
@@ -439,6 +641,7 @@ function sessionRow(week, s, i) {
 function renderHome() {
   renderSendLine();
   const box = $('weeks');
+  $('add-time').hidden = !token() || !weeks.length;
   if (!token()) {
     const card = el('div', 'empty');
     card.append(el('p', '', 'This app needs your access key before it can show your sessions.'),
@@ -455,12 +658,21 @@ function renderHome() {
   }
   box.replaceChildren(...weeks.map((w, i) => {
     const sec = el('section', 'week');
-    const list = el('ul', 'list');
+    sec.append(el('h2', '', weekLabel(w.week, i)));
     const sessions = i === 0
-      ? [...w.sessions, { id: 'other', name: 'Another session', note: 'Not on the list? Record it here.' }]
+      ? [...w.sessions, { id: 'other', kind: 'doc', name: 'Another session', note: 'Not on the list? Record it here.' }]
       : w.sessions;
-    list.append(...sessions.map((s, n) => sessionRow(w, s, n)));
-    sec.append(el('h2', '', weekLabel(w.week, i)), list);
+    if (sessions.length) {
+      const list = el('ul', 'list');
+      list.append(...sessions.map((s) => sessionRow(w, s)));
+      sec.append(list);
+    }
+    const xs = extrasFor(w.week);
+    if (xs.length) {
+      const list = el('ul', 'list');
+      list.append(...xs.map((x) => extraRow(w, x)));
+      sec.append(el('h3', 'sub-h', 'Other billable time'), list);
+    }
     return sec;
   }));
 }
@@ -474,11 +686,177 @@ function openSession(week, session) {
   $('sess-name').textContent = session.name;
   $('sess-when').textContent = session.date ? `${dayLabel(session.date)}${session.time ? ` · ${session.time}` : ''}` : 'Start by saying which session this is.';
   setHint(session.hint || HINT);
+  const billingOnly = session.kind === 'billing';
+  $('recorder').hidden = $('hint').hidden = $('takes-box').hidden = billingOnly;
+  $('bill-card').hidden = session.kind === 'doc';
+  if (!$('bill-card').hidden) fillBilling();
   $('home').hidden = true;
   $('session').hidden = false;
   window.scrollTo(0, 0);
   renderTakes();
 }
+
+/* ---------- Billing details for one session ---------- */
+
+function readBilling() {
+  const pressed = (id) => { const b = $(id).querySelector('[aria-pressed="true"]'); return b ? b.dataset.v : null; };
+  const count = $('b-count').value.trim();
+  const same = pressed('b-same');
+  return {
+    headcount: count === '' ? null : Math.max(0, Math.min(99, Number(count))),
+    attended: [...$('b-who').querySelectorAll('[aria-pressed="true"]')].map((b) => b.dataset.v),
+    prep: pressed('b-prep') == null ? null : Number(pressed('b-prep')),
+    sameTimes: same == null ? null : same === '1',
+    start: same === '0' ? $('b-start').value || null : null,
+    end: same === '0' ? $('b-end').value || null : null,
+    note: $('b-note').value.trim(),
+  };
+}
+
+function pressOne(groupId, value) {
+  $(groupId).querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(value != null && b.dataset.v === String(value))));
+}
+
+function syncTimes() {
+  const different = $('b-same').querySelector('[data-v="0"]').getAttribute('aria-pressed') === 'true';
+  $('b-start').disabled = $('b-end').disabled = !different;
+}
+
+function fillBilling() {
+  const s = current.session;
+  const d = detailsFor(current.week, s.id) || {};
+  const perClient = s.kind === 'billing';
+  $('f-count').hidden = perClient;
+  $('f-who').hidden = !perClient;
+  $('b-count').value = d.headcount == null ? '' : d.headcount;
+  $('b-who').replaceChildren(...(s.clients || []).map((c) => {
+    const b = el('button', '', c);
+    b.type = 'button';
+    b.dataset.v = c;
+    b.setAttribute('aria-pressed', String((d.attended || []).includes(c)));
+    return b;
+  }));
+  pressOne('b-prep', d.prep);
+  pressOne('b-same', d.sameTimes == null ? null : d.sameTimes ? '1' : '0');
+  $('b-start').value = d.start || (s.start ? s.start.slice(11, 16) : '');
+  $('b-end').value = d.end || '';
+  $('b-note').value = d.note || '';
+  syncTimes();
+  $('bill-card').classList.toggle('locked', Boolean(s.billed));
+  markSaved();
+}
+
+function markSaved() {
+  if (!current || $('bill-card').hidden) return;
+  const line = $('b-save');
+  const pending = `details/${current.week}/${current.session.id}.json` in outbox;
+  if (current.session.billed) { line.textContent = 'Already on your timecard.'; line.className = 'save-line ok'; }
+  else if (pending) { line.textContent = 'Saved on this phone, waiting to send.'; line.className = 'save-line warn'; }
+  else if (detailsFor(current.week, current.session.id)) { line.textContent = 'Saved. Your Mac will use these for the timecard.'; line.className = 'save-line ok'; }
+  else { line.textContent = 'Optional. Anything you fill in here, you won’t be asked about later.'; line.className = 'save-line'; }
+}
+
+function saveBilling() {
+  if (!current || current.session.billed) return;
+  const v = readBilling();
+  const empty = v.headcount == null && !v.attended.length && v.prep == null && v.sameTimes == null && !v.note;
+  queue(`details/${current.week}/${current.session.id}.json`, empty ? null : { ...v, updatedAt: new Date().toISOString() });
+  markSaved();
+}
+
+$('b-minus').addEventListener('click', () => { const n = Number($('b-count').value || 0); $('b-count').value = n > 0 ? n - 1 : ''; saveBilling(); });
+$('b-plus').addEventListener('click', () => { $('b-count').value = Math.min(99, Number($('b-count').value || 0) + 1); saveBilling(); });
+$('b-count').addEventListener('change', saveBilling);
+$('b-who').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'));
+  saveBilling();
+});
+for (const id of ['b-prep', 'b-same']) {
+  $(id).addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    const on = b.getAttribute('aria-pressed') === 'true';
+    pressOne(id, on ? null : b.dataset.v);   // tap again to clear
+    if (id === 'b-same') {
+      syncTimes();
+      if (!on && b.dataset.v === '0' && !$('b-end').value && $('b-start').value) {
+        const [h, m] = $('b-start').value.split(':').map(Number);
+        $('b-end').value = `${String(Math.min(23, h + 1)).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+      }
+    }
+    saveBilling();
+  });
+}
+for (const id of ['b-start', 'b-end']) $(id).addEventListener('change', saveBilling);
+$('b-note').addEventListener('input', () => { clearTimeout(saveBilling.t); saveBilling.t = setTimeout(saveBilling, 700); });
+
+/* ---------- Other billable time ---------- */
+
+let editing = null;   // the entry open in the dialog, or null for a new one
+const pad = (n) => String(n).padStart(2, '0');
+const isoDay = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+function mondayOf(iso) {
+  const d = new Date(`${iso}T12:00`);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return isoDay(d);
+}
+
+function openTime(x) {
+  editing = x || null;
+  const now = new Date();
+  $('time-title').textContent = x ? 'Other time' : 'Add other time';
+  $('t-kind').value = x ? x.kind : 'Hours and doc';
+  $('t-date').value = x ? x.date : isoDay(now);
+  $('t-date').max = isoDay(new Date(now.getTime() + 7 * 864e5));
+  $('t-start').value = x ? x.start : '';
+  $('t-end').value = x ? x.end : '';
+  $('t-note').value = x ? x.note || '' : '';
+  $('t-delete').hidden = !x;
+  const locked = Boolean(x && x.billed);
+  for (const id of ['t-kind', 't-date', 't-start', 't-end', 't-note', 't-delete', 't-save']) $(id).disabled = locked;
+  $('t-msg').textContent = locked ? 'Already on your timecard.' : '';
+  $('time-dlg').dataset.start = JSON.stringify(timeValues());
+  $('time-dlg').showModal();
+}
+
+function timeValues() {
+  return { kind: $('t-kind').value, date: $('t-date').value, start: $('t-start').value, end: $('t-end').value, note: $('t-note').value.trim() };
+}
+
+function closeTime() {
+  if (JSON.stringify(timeValues()) !== $('time-dlg').dataset.start && !confirm('Discard your changes?')) return;
+  $('time-dlg').close();
+}
+
+$('add-time').addEventListener('click', () => openTime(null));
+$('time-close').addEventListener('click', closeTime);
+$('t-cancel').addEventListener('click', closeTime);
+$('time-dlg').addEventListener('click', (e) => { if (e.target === $('time-dlg')) closeTime(); });
+$('time-dlg').addEventListener('cancel', (e) => { e.preventDefault(); closeTime(); });
+$('time-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const v = timeValues();
+  if (!v.date || !v.start || !v.end) { $('t-msg').textContent = 'Fill in the day and both times.'; return; }
+  if (v.end <= v.start) { $('t-msg').textContent = 'The end time needs to be after the start.'; return; }
+  const week = mondayOf(v.date);
+  const id = editing ? editing.id : `x${Date.now().toString(36)}`;
+  if (editing && mondayOf(editing.date) !== week) queue(`extra/${mondayOf(editing.date)}/${id}.json`, null);
+  queue(`extra/${week}/${id}.json`, { id, ...v, createdAt: editing ? editing.createdAt : new Date().toISOString(), billed: false });
+  if (!weeks.some((w) => w.week === week)) {
+    weeks.push({ week, sessions: [] });
+    weeks.sort((a, b) => b.week.localeCompare(a.week));
+  }
+  $('time-dlg').close();
+  render();
+});
+$('t-delete').addEventListener('click', () => {
+  if (!editing || !confirm('Delete this time?')) return;
+  queue(`extra/${mondayOf(editing.date)}/${editing.id}.json`, null);
+  $('time-dlg').close();
+  render();
+});
 
 function closeSession() {
   if (recorder) stopRecording();
@@ -725,7 +1103,7 @@ $('set-update').addEventListener('click', async () => {
 <script>
 // Offline support + updates. See sw.js.
 // The version shown in Settings. tools/bump.sh keeps this in step with VERSION in sw.js.
-window.APP_VERSION = 'v3';
+window.APP_VERSION = 'v4';
 (async () => {
   if (!('serviceWorker' in navigator)) return;
   const reg = await navigator.serviceWorker.register('sw.js');
