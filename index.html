@@ -105,7 +105,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 @keyframes pulse { from { opacity: .9; transform: scale(.94); } to { opacity: 0; transform: scale(1.12); } }
 @media (prefers-reduced-motion: reduce) { .recording .rec-btn::after { animation: none; opacity: .7; } }
 .rec-label { font-weight: 700; min-height: 1.5em; }
-.hint { color: var(--muted); font-size: .92rem; text-align: center; max-width: 34em; margin: 0 auto; min-height: 4.2em; }
+.hint { color: var(--muted); font-size: .92rem; text-align: center; max-width: 34em; margin: 0 auto; min-height: 5.6em; }
 .hint.bad { color: var(--bad); }
 .takes h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 1.2rem; color: var(--muted); margin: 22px 0 8px; }
 .take { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: center; padding: 12px 14px; }
@@ -471,7 +471,7 @@ function openSession(week, session) {
   current = { week: week.week, session };
   $('sess-name').textContent = session.name;
   $('sess-when').textContent = session.date ? `${dayLabel(session.date)}${session.time ? ` · ${session.time}` : ''}` : 'Start by saying which session this is.';
-  setHint(HINT);
+  setHint(session.hint || HINT);
   $('home').hidden = true;
   $('session').hidden = false;
   window.scrollTo(0, 0);
@@ -576,7 +576,7 @@ async function startRecording() {
   $('rec-btn').disabled = false;
   $('rec-btn').setAttribute('aria-label', 'Stop recording');
   $('rec-label').textContent = 'Recording. Tap to stop.';
-  setHint(HINT);
+  setHint((current && current.session.hint) || HINT);
   ticker = setInterval(() => { $('timer').textContent = mmss((Date.now() - startedAt) / 1000); }, 250);
   try { wakeLock = await navigator.wakeLock.request('screen'); } catch { wakeLock = null; }
 }
@@ -723,7 +723,7 @@ $('set-update').addEventListener('click', async () => {
 <script>
 // Offline support + updates. See sw.js.
 // The version shown in Settings. tools/bump.sh keeps this in step with VERSION in sw.js.
-window.APP_VERSION = 'v1';
+window.APP_VERSION = 'v2';
 (async () => {
   if (!('serviceWorker' in navigator)) return;
   const reg = await navigator.serviceWorker.register('sw.js');
